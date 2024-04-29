@@ -274,17 +274,17 @@ namespace FilteringDocsUsingLINQ
             (_archivedDocuments?.ElementAt(3) as DocumentBase)?.UpdateId(uniqueId);
             (_archivedDocuments?.ElementAt(5) as DocumentBase)?.UpdateId(uniqueId);
 
-            // Отримати перелік унікальних документів,
+            // Отримати перелік однакових документів,
             // які наявні в обох переліках документів
-            // Для роботи Union обов'язково в користувацьких
+            // Для роботи Intersect обов'язково в користувацьких
             // типах даних (класах) повинні бути перевизначені методи:
             // bool Equals(object obj) та int GetHashCode()
-            var difference = _newDocuments?.Union(_archivedDocuments);
+            var difference = _newDocuments?.Intersect(_archivedDocuments);
 
             // Відобразити таблицю з документами
             ShowAllDocuments();
 
-            // Вивести всі унікальні документи
+            // Вивести всі однакових документи
             // з обох колекцій
             Out(difference);
 
