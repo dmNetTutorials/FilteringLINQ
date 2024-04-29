@@ -52,9 +52,12 @@ namespace FilteringDocsUsingLINQ
         {
             if (sequence != null)
             {
+                Console.WriteLine(Environment.NewLine);
+                short docNumber = 1;
                 foreach (var elem in sequence)
                 {
-                    Console.WriteLine($"{elem}");
+                    Console.WriteLine($"{docNumber}.)\t{elem}");
+                    docNumber++;
                 }
             }
         }
@@ -108,29 +111,30 @@ namespace FilteringDocsUsingLINQ
             Console.Write($"{leftHeaderText}");
             ExtendTitleToTableCenter(leftHeaderText, center);
 
-            Console.Write($"|\t\t{rightHeaderText}");
-            Console.WriteLine(Environment.NewLine);
-            Console.WriteLine(_delimiter);
+            var delimeterStartPosition = Console.GetCursorPosition().Left;
+            Console.Write($"|\t\t");
+            var rightColumnStartPosition = Console.GetCursorPosition().Left;
+            Console.Write($"{rightHeaderText}");
+            Console.WriteLine($"{Environment.NewLine}{_delimiter}");
 
             foreach (var doc in docs)
             {
-                Console.Write($"{doc?.NewDoc?.Type} документ №:\t\t\t|");
-                Console.Write($"\t{doc?.ArchiveDoc?.Type} документ №:");
-                Console.WriteLine(Environment.NewLine);
-                Console.WriteLine($"{doc?.NewDoc?.Id}\t|\t{doc?.ArchiveDoc?.Id}");
+                var newDocLines = doc?.NewDoc?.ToString().Split(Environment.NewLine);
+                var archiveDocLines = doc?.ArchiveDoc?.ToString().Split(Environment.NewLine);
 
-                Console.Write($"{doc?.NewDoc?.Title}");
-                ExtendTitleToTableCenter(doc.NewDoc.Title, center);
-                Console.Write($"|\t{doc?.ArchiveDoc?.Title}");
-
-                Console.WriteLine(Environment.NewLine);
-                Console.Write($"від\t{doc?.NewDoc?.CreationDate.ToString("dd.MM.yyyy")}\t\t\t|");
-                Console.Write($"\tвід\t{doc?.ArchiveDoc?.CreationDate.ToString("dd.MM.yyyy")}");
-                Console.WriteLine(Environment.NewLine);
+                for (int i = 0;
+                     i < Math.Max(newDocLines?.Length, archiveDocLines?.Length);
+                     i++)
+                {
+                    Console.Write($"{(i < newDocLines?.Length ? newDocLines[i] : "")}");
+                    Console.SetCursorPosition(delimeterStartPosition, Console.GetCursorPosition().Top);
+                    Console.Write(@"|");
+                    Console.SetCursorPosition(rightColumnStartPosition, Console.GetCursorPosition().Top);
+                    Console.WriteLine($"{(i < archiveDocLines?.Length ? archiveDocLines[i] : "")}");
+                }
 
                 Console.WriteLine(_delimiter);
             }
-
         }
 
         /// <summary>
@@ -151,22 +155,22 @@ namespace FilteringDocsUsingLINQ
             // Максимальний час зберігання документа за його типом
             var documentStoringDeadline = new[]
             {
-    new {
-		// Архівний документ
-		Type = ArchivedDocument.ArchivedTypeTitle,
-		// Зберігається 5 років
-		Duration = 5, },
-    new {
-		// Внутрішній документ
-		Type = Document.InternalDocumentTypeTitle,
-		// Зберігається 1 рік
-		Duration = 1, },
-    new {
-		// Вхідний документ
-		Type = Document.ExternalDocumentTypeTitle,
-		// Зберігається 2 роки
-		Duration = 2, },
-};
+                new {
+		            // Архівний документ
+		            Type = ArchivedDocument.ArchivedTypeTitle,
+		            // Зберігається 5 років
+		            Duration = 5, },
+                new {
+		            // Внутрішній документ
+		            Type = Document.InternalDocumentTypeTitle,
+		            // Зберігається 1 рік
+		            Duration = 1, },
+                new {
+		            // Вхідний документ
+		            Type = Document.ExternalDocumentTypeTitle,
+		            // Зберігається 2 роки
+		            Duration = 2, },
+            };
             // Зпівставлення типу документа та його часу зберігання
             var documentsStoringDeadline = _newDocuments?.Join(documentStoringDeadline,
                                 // ключі повинні співпадати за типом даних
@@ -182,6 +186,8 @@ namespace FilteringDocsUsingLINQ
                                         StorageDuration = docType?.Duration,
                                     };
                                 });
+
+            Console.WriteLine(@"Перелік документів, з нормативним часом їх зберігання:");
             // Вивести інформація про час зберігання документа
             foreach (var doc in documentsStoringDeadline)
             {
@@ -198,7 +204,7 @@ namespace FilteringDocsUsingLINQ
         private static void GetRecentDocs()
         {
             // Згенерувати єдиний ідентифікатор
-            var uniqueId = Guid.NewGuid();
+            var uniqueId = 3;
 
             // Задати однаковий ідентифікатор для документів
             // з різних колекцій, щоб можна було отримати різницю
@@ -214,14 +220,15 @@ namespace FilteringDocsUsingLINQ
             // Для роботи Except обов'язково в користувацьких
             // типах даних (класах) повинні бути перевизначені методи:
             // bool Equals(object obj) та int GetHashCode()
-            var difference = _newDocuments?.Except(_archivedDocuments);
+            var filteredDocs = _newDocuments?.Except(_archivedDocuments);
 
             // Відобразити таблицю з документами
             ShowAllDocuments();
 
+            Console.WriteLine(@"Перелік документів, які ще не були архівовані:");
             // Вивести тільки нові документи, які ще ні
             // разу не були в архіві
-            Out(difference);
+            Out(filteredDocs);
 
         }
         /// <summary>
@@ -230,7 +237,7 @@ namespace FilteringDocsUsingLINQ
         private static void GetNewestDocs()
         {
             // Згенерувати єдиний ідентифікатор
-            var uniqueId = Guid.NewGuid();
+            var uniqueId = 3;
 
             // Задати однаковий ідентифікатор для документів
             // з різних колекцій, щоб можна було отримати дублікати
@@ -246,16 +253,15 @@ namespace FilteringDocsUsingLINQ
             // Для роботи Union обов'язково в користувацьких
             // типах даних (класах) повинні бути перевизначені методи:
             // bool Equals(object obj) та int GetHashCode()
-            var difference = _newDocuments?.Union(_archivedDocuments);
+            var filteredDocs = _newDocuments?.Union(_archivedDocuments);
 
             // Відобразити таблицю з документами
             ShowAllDocuments();
 
+            Console.WriteLine(@"Перелік унікальних документів (нових та архівних):");
             // Вивести всі унікальні документи
             // з обох колекцій
-            Out(difference);
-
-
+            Out(filteredDocs);
         }
         /// <summary>
         /// Перелік документів, які вже були раніше в системі (наявні в архіві з тими ж самими даними)
@@ -263,15 +269,11 @@ namespace FilteringDocsUsingLINQ
         private static void GetExsistingDocs()
         {
             // Згенерувати єдиний ідентифікатор
-            var uniqueId = Guid.NewGuid();
+            var uniqueId = 3;
 
             // Задати однаковий ідентифікатор для документів
             // з різних колекцій, щоб можна було отримати дублікати
             (_newDocuments?.ElementAt(1) as DocumentBase)?.UpdateId(uniqueId);
-            (_newDocuments?.ElementAt(3) as DocumentBase)?.UpdateId(uniqueId);
-            (_newDocuments?.ElementAt(5) as DocumentBase)?.UpdateId(uniqueId);
-            (_archivedDocuments?.ElementAt(4) as DocumentBase)?.UpdateId(uniqueId);
-            (_archivedDocuments?.ElementAt(3) as DocumentBase)?.UpdateId(uniqueId);
             (_archivedDocuments?.ElementAt(5) as DocumentBase)?.UpdateId(uniqueId);
 
             // Отримати перелік однакових документів,
@@ -279,15 +281,15 @@ namespace FilteringDocsUsingLINQ
             // Для роботи Intersect обов'язково в користувацьких
             // типах даних (класах) повинні бути перевизначені методи:
             // bool Equals(object obj) та int GetHashCode()
-            var difference = _newDocuments?.Intersect(_archivedDocuments);
+            var filteredDocs = _newDocuments?.Intersect(_archivedDocuments);
 
             // Відобразити таблицю з документами
             ShowAllDocuments();
 
+            Console.WriteLine(@"Перелік документів, які наявні в переліку нових та архівних:");
             // Вивести всі однакових документи
             // з обох колекцій
-            Out(difference);
-
+            Out(filteredDocs);
 
         }
         static void Menu()
@@ -334,7 +336,6 @@ namespace FilteringDocsUsingLINQ
 
             Console.ReadLine();
         }
-
         public static void Run()
         {
             Menu();
