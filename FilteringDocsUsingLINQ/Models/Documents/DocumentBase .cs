@@ -2,7 +2,7 @@ namespace FilteringDocsUsingLINQ.Models.Documents
 {
     public abstract class DocumentBase : IDocument
     {
-        public Guid Id { get; protected set; }
+        public long Id { get; protected set; }
         public string Title { get; set; }
         public DateTime CreationDate { get; set; }
         public string Type { get; protected set; }
@@ -12,7 +12,7 @@ namespace FilteringDocsUsingLINQ.Models.Documents
                                string type)
         {
             Title = title ?? String.Empty;
-            Id = Guid.NewGuid();
+            Id = (new Random()).Next(1, 10);
             CreationDate = GetRandomDate();
             Type = type;
             Versions = GetVersions();
@@ -41,7 +41,7 @@ namespace FilteringDocsUsingLINQ.Models.Documents
         /// Оновити ідентифіктор документа
         /// </summary>
         /// <param name="newId"></param>
-        public void UpdateId(Guid newId)
+        public void UpdateId(long newId)
         {
             this.Id = newId;
         }
@@ -94,9 +94,9 @@ namespace FilteringDocsUsingLINQ.Models.Documents
         public override string ToString()
         {
             return $"{Type} документ №:\t{Id}" +
-                   $"{Environment.NewLine}{Title}\t" +
-                   $"від\t{CreationDate.ToString("dd.MM.yyyy")}" +
-                   $"{Environment.NewLine}";
+                   $"{Environment.NewLine}{Title}" +
+                   $"{Environment.NewLine}" +
+                   $"від\t{CreationDate.ToString("dd.MM.yyyy")}";
         }
 
     }
