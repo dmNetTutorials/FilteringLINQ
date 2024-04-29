@@ -8,7 +8,7 @@ namespace FilteringDocsUsingLINQ.Models.Documents
         /// <summary>
         /// Ідентифікаційний номер документа
         /// </summary>
-        public Guid Id { get; }
+        public long Id { get; }
 
         /// <summary>
         /// Назва документа
